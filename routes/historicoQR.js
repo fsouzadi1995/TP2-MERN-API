@@ -7,7 +7,7 @@ router.get('/', async (req, res) => {
   res.send(await historical.Get());
 });
 
-router.get('/', async (req, res) => {
+router.get('/latest', async (req, res) => {
   res.send(await historical.GetLatest());
 });
 
