@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('../entities/usuario');
+const AsistenciasController = require('../controllers/asistenciasController');
 const Util = require('./util/controller-util');
-const loader = require('../infrastructure/config-loader');
-const btoa = require('btoa');
 
 /**
  * Returns an array of Users
@@ -11,7 +10,7 @@ async function Get() {
   try {
     const User = await getDB();
     return await User.find({});
-  } catch (err) {}
+  } catch (err) { }
 }
 
 /**
@@ -49,6 +48,23 @@ async function GetByEmail(email) {
 
   return result;
 }
+/**
+ * Returns a Users that matches with a specific IDEntidad
+ * @param string {} institucionId
+ */
+async function GetByInstitucionId(institucionId) {
+  const User = await getDB();
+  let result = null;
+  try {
+    result = await User.find({ institucionId: institucionId });
+
+    if (result === null) throw `>>> User with institution id "${institucionId}" not found`;
+  } catch (err) {
+    console.log(err);
+  }
+
+  return result;
+}
 
 /**
  * Creates a new User
@@ -57,8 +73,6 @@ async function GetByEmail(email) {
 async function Create(user) {
   const User = await getDB();
   let result = null;
-
-  let date = new Date();
 
   try {
     if (!(await IsEmailOnUse(user.email))) {
@@ -72,11 +86,12 @@ async function Create(user) {
         },
         phone: user.phone,
         email: user.email,
+        jwt: user.jwt,
         imagePatch: user.imagePatch,
         isAdmin: false,
         checkIn: user.checkIn,
         checkOut: user.checkOut,
-        secret: btoa(btoa(date.valueOf) + Math.random() * 10000),
+        institucionId: user.institucionId,
       }).save();
 
       result = newUser;
@@ -101,26 +116,30 @@ async function Update(id, user) {
     if (Util.IsEqual(id, user._id))
       if (Util.IsObjectId(id))
         if (await UserExists(id))
-          result = await User.findByIdAndUpdate(
-            id,
-            {
-              name: { first: user.name.first, last: user.name.last },
-              adress: {
-                street: user.adress.street,
-                number: user.adress.number,
-                floor: user.adress.floor,
-                apartment: user.adress.apartment,
+          if (AsistenciasController.InstitutionExists()) {
+            result = await User.findByIdAndUpdate(
+              id,
+              {
+                name: { first: user.name.first, last: user.name.last },
+                adress: {
+                  street: user.adress.street,
+                  number: user.adress.number,
+                  floor: user.adress.floor,
+                  apartment: user.adress.apartment,
+                },
+                phone: user.phone,
+                email: user.email,
+                jwt: user.jwt,
+                imagePatch: user.imagePatch,
+                isAdmin: false,
+                checkIn: user.checkIn,
+                checkOut: user.checkOut,
+                institucionId: user.institucionId,
               },
-              phone: user.phone,
-              email: user.email,
-              jwt: user.jwt,
-              imagePatch: user.imagePatch,
-              isAdmin: false,
-              checkIn: user.checkIn,
-              checkOut: user.checkOut,
-            },
-            { useFindAndModify: false }
-          );
+              { useFindAndModify: false }
+            );
+          }
+          else throw `>>> Error: intitution doesn't exist`;
         else throw `>>> Error: user does not exist with id: ${id}`;
       else throw `>>> Error: id cannot be casted to ObjectId`;
     else throw `>>> Error: mismatching ids`;
@@ -184,4 +203,5 @@ module.exports = {
   Update,
   Delete,
   UserExists,
+  GetByInstitucionId,
 };
