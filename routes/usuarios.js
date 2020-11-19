@@ -8,9 +8,17 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:param', async (req, res) => {
-  const result = req.params.param.includes('@')
-    ? await users.GetByEmail(req.params.param)
-    : await users.GetById(req.params.param);
+  console.log(req.params)
+  let result = null
+  if (req.params.param.includes('@')) {
+    result = await users.GetByEmail(req.params.param)
+  }
+  else {
+    result = await users.GetById(req.params.param);
+    if (result == null) {
+      result = await users.GetByInstitucionId(req.params.param)
+    }
+  }
 
   if (result !== null) res.status(200).json(result);
   else res.sendStatus(403);

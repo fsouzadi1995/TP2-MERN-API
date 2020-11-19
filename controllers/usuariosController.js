@@ -49,6 +49,23 @@ async function GetByEmail(email) {
 
   return result;
 }
+/**
+ * Returns a Users that matches with a specific IDEntidad
+ * @param string {} institucionId
+ */
+async function GetByInstitucionId(institucionId) {
+  const User = await getDB();
+  let result = null;
+  try {
+    result = await User.find({ institucionId: institucionId });
+
+    if (result === null) throw `>>> User with institution id "${institucionId}" not found`;
+  } catch (err) {
+    console.log(err);
+  }
+
+  return result;
+}
 
 /**
  * Creates a new User
@@ -77,6 +94,7 @@ async function Create(user) {
         checkIn: user.checkIn,
         checkOut: user.checkOut,
         secret: btoa(btoa(date.valueOf) + Math.random() * 10000),
+        institucionId: user.institucionId,
       }).save();
 
       result = newUser;
@@ -118,6 +136,7 @@ async function Update(id, user) {
               isAdmin: false,
               checkIn: user.checkIn,
               checkOut: user.checkOut,
+              institucionId: user.institucionId,
             },
             { useFindAndModify: false }
           );
@@ -184,4 +203,5 @@ module.exports = {
   Update,
   Delete,
   UserExists,
+  GetByInstitucionId,
 };
