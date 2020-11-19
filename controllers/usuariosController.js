@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const User = require('../entities/usuario');
 const Util = require('./util/controller-util');
+const loader = require('../infrastructure/config-loader');
+const btoa = require('btoa');
 
 /**
  * Returns an array of Users
@@ -56,6 +58,8 @@ async function Create(user) {
   const User = await getDB();
   let result = null;
 
+  let date = new Date();
+
   try {
     if (!(await IsEmailOnUse(user.email))) {
       const newUser = await new User({
@@ -68,11 +72,11 @@ async function Create(user) {
         },
         phone: user.phone,
         email: user.email,
-        jwt: user.jwt,
         imagePatch: user.imagePatch,
         isAdmin: false,
         checkIn: user.checkIn,
         checkOut: user.checkOut,
+        secret: btoa(btoa(date.valueOf) + Math.random() * 10000),
       }).save();
 
       result = newUser;

@@ -6,11 +6,11 @@ const userSchema = new Schema({
   adress: { street: String, number: Number, floor: Number, apartment: String },
   phone: String,
   email: String,
-  jwt: String,
   imagePatch: String,
   isAdmin: Boolean,
   checkIn: Number,
   checkOut: Number,
+  secret: String,
 });
 
 module.exports = mongoose.model('User', userSchema);

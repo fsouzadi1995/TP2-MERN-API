@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const HistoricalQR = require('../entities/historicoQR');
 const Util = require('./util/controller-util');
+const loader = require('../infrastructure/config-loader');
+const btoa = require('btoa');
 
 /**
  * Returns an array of HistoricalQRs
@@ -48,14 +50,18 @@ async function Create() {
   const HistoricalQR = await getDB();
   let result = null;
 
-  const dateNow = new Date();
-  const expireTime = 5;
+  const date = new Date();
+  const expireTime = 15;
 
   try {
     result = await new HistoricalQR({
-      secret: Math.trunc(dateNow.valueOf() * Math.random()),
-      created: dateNow.valueOf(),
-      expire: new Date(dateNow.getTime() + expireTime * 60000).valueOf(),
+      secret: btoa(
+        btoa(date.valueOf()) +
+          Math.random() * 555 +
+          date.valueOf().toString().substr(0, 5).split('').reverse().join('')
+      ),
+      created: date.valueOf(),
+      expire: new Date(date.getTime() + expireTime * 60000).valueOf(),
     }).save();
   } catch (err) {
     console.log(err);
