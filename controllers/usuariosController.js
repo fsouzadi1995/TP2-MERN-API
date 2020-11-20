@@ -3,6 +3,7 @@ const User = require('../entities/usuario');
 const Util = require('./util/controller-util');
 const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
+const institucionController = require('../controllers/institucionesController')
 
 /**
  * Returns an array of Users
@@ -11,7 +12,7 @@ async function Get() {
   try {
     const User = await getDB();
     return await User.find({});
-  } catch (err) {}
+  } catch (err) { }
 }
 
 /**
@@ -53,13 +54,14 @@ async function GetByEmail(email) {
  * Returns a Users that matches with a specific IDEntidad
  * @param string {} institucionId
  */
-async function GetByInstitucionId(institucionId) {
+async function GetByinstitutionId(institutionId) {
   const User = await getDB();
+  console.log("llego al controller "+institutionId)
   let result = null;
   try {
-    result = await User.find({ institucionId: institucionId });
+    result = await User.find({ institutionId: institutionId });
 
-    if (result === null) throw `>>> User with institution id "${institucionId}" not found`;
+    if (result === null) throw `>>> User with institution id "${institutionId}" not found`;
   } catch (err) {
     console.log(err);
   }
@@ -79,25 +81,27 @@ async function Create(user) {
 
   try {
     if (!(await IsEmailOnUse(user.email))) {
-      const newUser = await new User({
-        name: { first: user.name.first, last: user.name.last },
-        adress: {
-          street: user.adress.street,
-          number: user.adress.number,
-          floor: user.adress.floor,
-          apartment: user.adress.apartment,
-        },
-        phone: user.phone,
-        email: user.email,
-        imagePatch: user.imagePatch,
-        isAdmin: false,
-        checkIn: user.checkIn,
-        checkOut: user.checkOut,
-        secret: btoa(btoa(date.valueOf) + Math.random() * 10000),
-        institucionId: user.institucionId,
-      }).save();
+      if (institucionController.InstitutionExists(user.institutionId)) {
+        const newUser = await new User({
+          name: { first: user.name.first, last: user.name.last },
+          adress: {
+            street: user.adress.street,
+            number: user.adress.number,
+            floor: user.adress.floor,
+            apartment: user.adress.apartment,
+          },
+          phone: user.phone,
+          email: user.email,
+          imagePatch: user.imagePatch,
+          isAdmin: false,
+          checkIn: user.checkIn,
+          checkOut: user.checkOut,
+          secret: btoa(btoa(date.valueOf) + Math.random() * 10000),
+          institutionId: user.institutionId,
+        }).save();
+        result = newUser;
 
-      result = newUser;
+      } else  throw `>>> Error: institution does not exist with id: ${id}`;
     } else throw `>>> Error: user email "${user.email}" already claimed`;
   } catch (err) {
     console.log(err);
@@ -119,27 +123,29 @@ async function Update(id, user) {
     if (Util.IsEqual(id, user._id))
       if (Util.IsObjectId(id))
         if (await UserExists(id))
-          result = await User.findByIdAndUpdate(
-            id,
-            {
-              name: { first: user.name.first, last: user.name.last },
-              adress: {
-                street: user.adress.street,
-                number: user.adress.number,
-                floor: user.adress.floor,
-                apartment: user.adress.apartment,
+          if (institucionController.InstitutionExists(user.institutionId))
+            result = await User.findByIdAndUpdate(
+              id,
+              {
+                name: { first: user.name.first, last: user.name.last },
+                adress: {
+                  street: user.adress.street,
+                  number: user.adress.number,
+                  floor: user.adress.floor,
+                  apartment: user.adress.apartment,
+                },
+                phone: user.phone,
+                email: user.email,
+                jwt: user.jwt,
+                imagePatch: user.imagePatch,
+                isAdmin: false,
+                checkIn: user.checkIn,
+                checkOut: user.checkOut,
+                institutionId: user.institutionId,
               },
-              phone: user.phone,
-              email: user.email,
-              jwt: user.jwt,
-              imagePatch: user.imagePatch,
-              isAdmin: false,
-              checkIn: user.checkIn,
-              checkOut: user.checkOut,
-              institucionId: user.institucionId,
-            },
-            { useFindAndModify: false }
-          );
+              { useFindAndModify: false }
+            );
+          else throw `>>> Error: institution does not exist with id: ${id}`;
         else throw `>>> Error: user does not exist with id: ${id}`;
       else throw `>>> Error: id cannot be casted to ObjectId`;
     else throw `>>> Error: mismatching ids`;
@@ -203,5 +209,5 @@ module.exports = {
   Update,
   Delete,
   UserExists,
-  GetByInstitucionId,
+  GetByinstitutionId,
 };
