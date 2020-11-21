@@ -11,6 +11,7 @@ const userSchema = new Schema({
   checkIn: Number,
   checkOut: Number,
   secret: String,
+  institutionId: String,
 });
 
 module.exports = mongoose.model('User', userSchema);

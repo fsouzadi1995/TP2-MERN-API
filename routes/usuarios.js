@@ -16,6 +16,14 @@ router.get('/:param', async (req, res) => {
   else res.sendStatus(403);
 });
 
+router.get('/institucion/:param', async (req, res) => {
+  console.log("paso por el routeo get "+req.params.param)
+  let result = await users.GetByinstitutionId(req.params.param)
+
+  if (result !== null) res.status(200).json(result);
+  else res.sendStatus(403);
+});
+
 router.post('/', async (req, res) => {
   const result = await users.Create(req.body);
   if (result !== null) res.status(201).json(result);
