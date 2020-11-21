@@ -134,10 +134,11 @@ async function GetLatestByUserId(id) {
 
   try {
     if (Util.IsObjectId(id))
-      if (Users.UserExists(id)){
-        result = await Attendance.find({ userId: id }).sort ({checkIn:-1}).limit(1);
-      } 
-      else throw `>>> Error: user with id "${id}" not found`;
+      if (Users.UserExists(id)) {
+        result = await Attendance.find({ userId: id })
+          .sort({ checkIn: -1 })
+          .limit(1);
+      } else throw `>>> Error: user with id "${id}" not found`;
     else throw `>>> Error: id cannot be casted to ObjectId`;
   } catch (err) {
     console.log(err);
@@ -157,4 +158,12 @@ async function getDB() {
   return await global.clientConnection.useDb('asistencias').model('Attendance');
 }
 
-module.exports = { Get, GetById, GetByUserId, Create, Update, Delete,GetLatestByUserId };
+module.exports = {
+  Get,
+  GetById,
+  GetByUserId,
+  Create,
+  Update,
+  Delete,
+  GetLatestByUserId,
+};

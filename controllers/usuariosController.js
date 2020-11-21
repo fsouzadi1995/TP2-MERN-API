@@ -3,7 +3,7 @@ const User = require('../entities/usuario');
 const Util = require('./util/controller-util');
 const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
-const institucionController = require('../controllers/institucionesController')
+const Institutions = require('../controllers/institucionesController');
 
 /**
  * Returns an array of Users
@@ -12,7 +12,7 @@ async function Get() {
   try {
     const User = await getDB();
     return await User.find({});
-  } catch (err) { }
+  } catch (err) {}
 }
 
 /**
@@ -54,14 +54,14 @@ async function GetByEmail(email) {
  * Returns a Users that matches with a specific IDEntidad
  * @param string {} institucionId
  */
-async function GetByinstitutionId(institutionId) {
+async function GetByInstitutionId(id) {
   const User = await getDB();
-  console.log("llego al controller "+institutionId)
   let result = null;
   try {
-    result = await User.find({ institutionId: institutionId });
+    result = await User.find({ institutionId: id });
 
-    if (result === null) throw `>>> User with institution id "${institutionId}" not found`;
+    if (result === null)
+      throw `>>> User with institution id "${institutionId}" not found`;
   } catch (err) {
     console.log(err);
   }
@@ -81,7 +81,7 @@ async function Create(user) {
 
   try {
     if (!(await IsEmailOnUse(user.email))) {
-      if (institucionController.InstitutionExists(user.institutionId)) {
+      if (Institutions.InstitutionExists(user.institutionId)) {
         const newUser = await new User({
           name: { first: user.name.first, last: user.name.last },
           adress: {
@@ -100,8 +100,7 @@ async function Create(user) {
           institutionId: user.institutionId,
         }).save();
         result = newUser;
-
-      } else  throw `>>> Error: institution does not exist with id: ${id}`;
+      } else throw `>>> Error: institution does not exist with id: ${id}`;
     } else throw `>>> Error: user email "${user.email}" already claimed`;
   } catch (err) {
     console.log(err);
@@ -123,7 +122,7 @@ async function Update(id, user) {
     if (Util.IsEqual(id, user._id))
       if (Util.IsObjectId(id))
         if (await UserExists(id))
-          if (institucionController.InstitutionExists(user.institutionId))
+          if (Institutions.InstitutionExists(user.institutionId))
             result = await User.findByIdAndUpdate(
               id,
               {
@@ -136,7 +135,6 @@ async function Update(id, user) {
                 },
                 phone: user.phone,
                 email: user.email,
-                jwt: user.jwt,
                 imagePatch: user.imagePatch,
                 isAdmin: false,
                 checkIn: user.checkIn,
@@ -205,9 +203,9 @@ module.exports = {
   Get,
   GetById,
   GetByEmail,
+  GetByInstitutionId,
   Create,
   Update,
   Delete,
   UserExists,
-  GetByinstitutionId,
 };
