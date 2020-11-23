@@ -136,7 +136,7 @@ async function GetLatestByUserId(id) {
     if (Util.IsObjectId(id))
       if (Users.UserExists(id)) {
         result = await Attendance.find({ userId: id })
-          .sort({ checkIn: -1 })
+          .sort({ _id:-1})
           .limit(1);
       } else throw `>>> Error: user with id "${id}" not found`;
     else throw `>>> Error: id cannot be casted to ObjectId`;
