@@ -28,25 +28,41 @@ router.get('/usuario/:id/latest', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const result = await attendances.Create(req.body);
   const token_qr = req.header('token_qr');
   const latest_secret = await historico.GetLatestSecret();
+  const validation=await validateToken.VerifyToken(token_qr,latest_secret);
 
-  if (await validateToken.VerifyToken(token_qr,latest_secret)) 
-    if (result !== null) res.status(201).json(result);
-    else res.sendStatus(403);
-  else res.sendStatus(401);
+  if (validation) {
+    const result = await attendances.Create(req.body);
+    if (result !== null) {
+      res.status(201).json(result);
+    }
+    else {
+      res.sendStatus(403);
+    }
+  }
+  else {
+    res.sendStatus(401);
+  }
 });
 
 router.put('/:id', async (req, res) => {
-  const result = await attendances.Update(req.params.id, req.body);
   const token_qr = req.header('token_qr');
   const latest_secret = await historico.GetLatestSecret();
-  
-  if (await validateToken.VerifyToken(token_qr,latest_secret)) 
-    if (result !== null) res.status(200).json(result);
-    else res.sendStatus(403);
-  else res.sendStatus(401);
+  const validation=await validateToken.VerifyToken(token_qr,latest_secret);
+
+  if (validation){ 
+    const result = await attendances.Update(req.params.id, req.body);
+    if (result !== null) {
+      res.status(200).json(result);
+    }
+    else {
+      res.sendStatus(403);
+    }
+  }
+  else {
+    res.sendStatus(401);
+  }
 });
 
 router.delete('/:id', async (req, res) => {
