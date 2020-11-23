@@ -5,12 +5,11 @@ const jwt = require('jsonwebtoken');
 //Funcion para generar Token
 
 async function CreateToken(qr) {
-
     let result = null;
     try {
         if (qr!==null){
 
-            const token = jwt.sign(qr._id,qr.secret);
+            const token = jwt.sign(qr._id.toJSON(),qr.secret);
             result = {
                 token: token,
             };

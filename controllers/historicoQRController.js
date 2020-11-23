@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const HistoricalQR = require('../entities/historicoQR');
 const Util = require('./util/controller-util');
+const createToken = require('./tokensController')
 const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
 
@@ -20,10 +21,30 @@ async function Get() {
 async function GetLatest() {
   try {
     const HistoricalQR = await getDB();
-    return await HistoricalQR.findOne().sort({ _id: -1 });
+    const latestQR = await HistoricalQR.findOne().sort({ _id: -1 });
+    const token =  await createToken.CreateToken(latestQR);
+
+    const QR={
+      _id:latestQR._id,
+      token: token.token,
+      created: latestQR.created,
+      expire: latestQR.expire
+    };
+
+    return QR;
+
   } catch (err) {}
 }
-
+/**
+ * Returns the latest HistoricalQR generated
+ */
+async function GetLatestSecret() {
+  try {
+    const HistoricalQR = await getDB();
+    const latestQR =await HistoricalQR.findOne().sort({ _id: -1 });
+    return  latestQR.secret;
+  } catch (err) {}
+}
 /**
  * Returns a HistoricalQR that matches the id
  * @param number {} id
@@ -81,4 +102,5 @@ module.exports = {
   GetLatest,
   GetById,
   Create,
+  GetLatestSecret
 };
