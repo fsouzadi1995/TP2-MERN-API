@@ -136,7 +136,7 @@ async function Update(id, user) {
                 phone: user.phone,
                 email: user.email,
                 imagePatch: user.imagePatch,
-                isAdmin: false,
+                isAdmin: user.isAdmin,
                 checkIn: user.checkIn,
                 checkOut: user.checkOut,
                 institutionId: user.institutionId,
