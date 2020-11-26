@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var attendances = require('../controllers/asistenciasController');
-var validateToken = require('../controllers/tokensController');
+var validateToken = require('../modules/token/token-utill');
 var historico = require('../controllers/historicoQRController');
 
 router.get('/', async (req, res) => {
