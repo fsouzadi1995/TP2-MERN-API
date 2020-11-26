@@ -1,5 +1,3 @@
-const mongoose = require('mongoose');
-const Util = require('./util/controller-util');
 const jwt = require('jsonwebtoken');
 
 //Funcion para generar Token
