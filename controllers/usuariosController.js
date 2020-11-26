@@ -4,7 +4,7 @@ const Util = require('./util/controller-util');
 const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
 const Institutions = require('../controllers/institucionesController');
-const moduleToken = require('../modules/token/token-utill')
+const tokenUtil = require('./util/token-util');
 
 /**
  * Returns an array of Users
@@ -13,9 +13,9 @@ async function Get() {
   try {
     const User = await getDB();
     let users = await User.find({});
-    let result = []
-    users.forEach(element => {
-      let jwt = moduleToken.CreateToken(element)
+    let result = [];
+    users.forEach((element) => {
+      let jwt = tokenUtil.CreateToken(element);
       let user = {
         _id: element._id,
         name: { first: element.name.first, last: element.name.last },
@@ -33,12 +33,12 @@ async function Get() {
         checkOut: element.checkOut,
         _jwt: jwt.token,
         institutionId: element.institutionId,
-      }
-      result.push(user)
+      };
+      result.push(user);
     });
 
     return result;
-  } catch (err) { }
+  } catch (err) {}
 }
 
 /**
@@ -52,7 +52,7 @@ async function GetById(id) {
   try {
     if (Util.IsObjectId(id)) {
       let userAux = await User.findById(id);
-      let jwt = moduleToken.CreateToken(userAux)
+      let jwt = tokenUtil.CreateToken(userAux);
       result = {
         _id: userAux._id,
         name: { first: userAux.name.first, last: userAux.name.last },
@@ -70,10 +70,9 @@ async function GetById(id) {
         checkOut: userAux.checkOut,
         _jwt: jwt.token,
         institutionId: userAux.institutionId,
-      }
-      return result
-    }
-    else throw `>>> Error: id cannot be casted to ObjectId`;
+      };
+      return result;
+    } else throw `>>> Error: id cannot be casted to ObjectId`;
   } catch (err) {
     console.log(err);
   }
@@ -91,7 +90,7 @@ async function GetByEmail(email) {
   try {
     let userAux = await User.findOne({ email: email });
     if (userAux != undefined && userAux !== null) {
-      let jwt = moduleToken.CreateToken(userAux)
+      let jwt = tokenUtil.CreateToken(userAux);
       result = {
         _id: userAux._id,
         name: { first: userAux.name.first, last: userAux.name.last },
@@ -109,9 +108,8 @@ async function GetByEmail(email) {
         checkOut: userAux.checkOut,
         _jwt: jwt.token,
         institutionId: userAux.institutionId,
-      }
-    }
-    else throw `>>> User with email "${email}" not found`;
+      };
+    } else throw `>>> User with email "${email}" not found`;
   } catch (err) {
     console.log(err);
   }
@@ -126,10 +124,10 @@ async function GetByInstitutionId(id) {
   const User = await getDB();
   try {
     let users = await User.find({ institutionId: id });
-    let result = []
+    let result = [];
     if (users.length > 0) {
-      users.forEach(element => {
-        let jwt = moduleToken.CreateToken(element)
+      users.forEach((element) => {
+        let jwt = tokenUtil.CreateToken(element);
         let user = {
           _id: element._id,
           name: { first: element.name.first, last: element.name.last },
@@ -147,11 +145,12 @@ async function GetByInstitutionId(id) {
           checkOut: element.checkOut,
           _jwt: jwt.token,
           institutionId: element.institutionId,
-        }
-        result.push(user)
+        };
+        result.push(user);
       });
       return result;
-    } throw `>>> User with institution id "${institutionId}" not found`;
+    }
+    throw `>>> User with institution id "${institutionId}" not found`;
   } catch (err) {
     console.log(err);
   }
