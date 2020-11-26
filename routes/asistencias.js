@@ -2,8 +2,6 @@ var express = require('express');
 var router = express.Router();
 
 var attendances = require('../controllers/asistenciasController');
-var validateToken = require('../modules/token/token-utill');
-var historico = require('../controllers/historicoQRController');
 
 router.get('/', async (req, res) => {
   res.send(await attendances.Get());
@@ -28,39 +26,31 @@ router.get('/usuario/:id/latest', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const token_qr = req.header('token_qr');
-  const latest_secret = await historico.GetLatestSecret();
-  const validation=await validateToken.VerifyToken(token_qr,latest_secret);
+  const isValid = await tokenUtil.VerifyToken(req.headers.jwt, secret);
 
-  if (validation) {
+  if (isValid) {
     const result = await attendances.Create(req.body);
     if (result !== null) {
       res.status(201).json(result);
-    }
-    else {
+    } else {
       res.sendStatus(403);
     }
-  }
-  else {
+  } else {
     res.sendStatus(401);
   }
 });
 
 router.put('/:id', async (req, res) => {
-  const token_qr = req.header('token_qr');
-  const latest_secret = await historico.GetLatestSecret();
-  const validation=await validateToken.VerifyToken(token_qr,latest_secret);
+  const isValid = await tokenUtil.VerifyToken(req.headers.jwt, secret);
 
-  if (validation){ 
+  if (isValid) {
     const result = await attendances.Update(req.params.id, req.body);
     if (result !== null) {
       res.status(200).json(result);
-    }
-    else {
+    } else {
       res.sendStatus(403);
     }
-  }
-  else {
+  } else {
     res.sendStatus(401);
   }
 });
