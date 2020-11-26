@@ -4,6 +4,7 @@ const Util = require('./util/controller-util');
 const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
 const Institutions = require('../controllers/institucionesController');
+const moduleToken = require('../modules/token/token-utill')
 
 /**
  * Returns an array of Users
@@ -11,8 +12,33 @@ const Institutions = require('../controllers/institucionesController');
 async function Get() {
   try {
     const User = await getDB();
-    return await User.find({});
-  } catch (err) {}
+    let users = await User.find({});
+    let result = []
+    users.forEach(element => {
+      let jwt = moduleToken.CreateToken(element)
+      let user = {
+        _id: element._id,
+        name: { first: element.name.first, last: element.name.last },
+        adress: {
+          street: element.adress.street,
+          number: element.adress.number,
+          floor: element.adress.floor,
+          apartment: element.adress.apartment,
+        },
+        phone: element.phone,
+        email: element.email,
+        imagePatch: element.imagePatch,
+        isAdmin: element.isAdmin,
+        checkIn: element.checkIn,
+        checkOut: element.checkOut,
+        _jwt: jwt.token,
+        institutionId: element.institutionId,
+      }
+      result.push(user)
+    });
+
+    return result;
+  } catch (err) { }
 }
 
 /**
@@ -24,7 +50,29 @@ async function GetById(id) {
   let result = null;
 
   try {
-    if (Util.IsObjectId(id)) result = await User.findById(id);
+    if (Util.IsObjectId(id)) {
+      let userAux = await User.findById(id);
+      let jwt = moduleToken.CreateToken(userAux)
+      result = {
+        _id: userAux._id,
+        name: { first: userAux.name.first, last: userAux.name.last },
+        adress: {
+          street: userAux.adress.street,
+          number: userAux.adress.number,
+          floor: userAux.adress.floor,
+          apartment: userAux.adress.apartment,
+        },
+        phone: userAux.phone,
+        email: userAux.email,
+        imagePatch: userAux.imagePatch,
+        isAdmin: userAux.isAdmin,
+        checkIn: userAux.checkIn,
+        checkOut: userAux.checkOut,
+        _jwt: jwt.token,
+        institutionId: userAux.institutionId,
+      }
+      return result
+    }
     else throw `>>> Error: id cannot be casted to ObjectId`;
   } catch (err) {
     console.log(err);
@@ -41,9 +89,29 @@ async function GetByEmail(email) {
   const User = await getDB();
   let result = null;
   try {
-    result = await User.findOne({ email: email });
-
-    if (result === null) throw `>>> User with email "${email}" not found`;
+    let userAux = await User.findOne({ email: email });
+    if (userAux != undefined && userAux !== null) {
+      let jwt = moduleToken.CreateToken(userAux)
+      result = {
+        _id: userAux._id,
+        name: { first: userAux.name.first, last: userAux.name.last },
+        adress: {
+          street: userAux.adress.street,
+          number: userAux.adress.number,
+          floor: userAux.adress.floor,
+          apartment: userAux.adress.apartment,
+        },
+        phone: userAux.phone,
+        email: userAux.email,
+        imagePatch: userAux.imagePatch,
+        isAdmin: userAux.isAdmin,
+        checkIn: userAux.checkIn,
+        checkOut: userAux.checkOut,
+        _jwt: jwt.token,
+        institutionId: userAux.institutionId,
+      }
+    }
+    else throw `>>> User with email "${email}" not found`;
   } catch (err) {
     console.log(err);
   }
@@ -56,12 +124,34 @@ async function GetByEmail(email) {
  */
 async function GetByInstitutionId(id) {
   const User = await getDB();
-  let result = null;
   try {
-    result = await User.find({ institutionId: id });
-
-    if (result === null)
-      throw `>>> User with institution id "${institutionId}" not found`;
+    let users = await User.find({ institutionId: id });
+    let result = []
+    if (users.length > 0) {
+      users.forEach(element => {
+        let jwt = moduleToken.CreateToken(element)
+        let user = {
+          _id: element._id,
+          name: { first: element.name.first, last: element.name.last },
+          adress: {
+            street: element.adress.street,
+            number: element.adress.number,
+            floor: element.adress.floor,
+            apartment: element.adress.apartment,
+          },
+          phone: element.phone,
+          email: element.email,
+          imagePatch: element.imagePatch,
+          isAdmin: element.isAdmin,
+          checkIn: element.checkIn,
+          checkOut: element.checkOut,
+          _jwt: jwt.token,
+          institutionId: element.institutionId,
+        }
+        result.push(user)
+      });
+      return result;
+    } throw `>>> User with institution id "${institutionId}" not found`;
   } catch (err) {
     console.log(err);
   }

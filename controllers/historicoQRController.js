@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 const HistoricalQR = require('../entities/historicoQR');
 const Util = require('./util/controller-util');
+<<<<<<< HEAD
 const tokenUtil = require('./util/token-util');
+=======
+const createToken = require('../modules/token/token-utill')
+>>>>>>> 3a915fcabc166e8fde958cc8fe7fac6e694e8239
 const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
 
