@@ -23,18 +23,18 @@ async function Generate() {
  * Validation check for a given JWT
  * @param token
  */
-async function Validate(token) {
-  const qr = await historical.GetLatest();
-  let isValid = false;
+// async function Validate(token) {
+//   const qr = await historical.GetLatest();
+//   let isValid = false;
 
-  jwt.verify(token, qr.secret, (err) => {
-    if (err) console.log(err);
-    else isValid = !isValid;
-  });
+//   jwt.verify(token, qr.secret, (err) => {
+//     if (err) console.log(err);
+//     else isValid = !isValid;
+//   });
 
-  console.log(`is QR valid? ${isValid}`);
+//   console.log(`is QR valid? ${isValid}`);
 
-  return isValid;
-}
+//   return isValid;
+// }
 
-module.exports = { Initialize, Generate, Validate };
+module.exports = { Initialize, Generate };
