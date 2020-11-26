@@ -188,7 +188,10 @@ async function Create(user) {
           secret: btoa(btoa(date.valueOf) + Math.random() * 10000),
           institutionId: user.institutionId,
         }).save();
-        result = newUser;
+        let userAux =  Object.assign({},newUser.toObject());
+        delete userAux.secret;
+        userAux._jwt = "moduleToken.CreateToken(userAux);"
+        result = userAux;
       } else throw `>>> Error: institution does not exist with id: ${id}`;
     } else throw `>>> Error: user email "${user.email}" already claimed`;
   } catch (err) {
