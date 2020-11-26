@@ -215,8 +215,8 @@ async function Update(id, user) {
     if (Util.IsEqual(id, user._id))
       if (Util.IsObjectId(id))
         if (await UserExists(id))
-          if (Institutions.InstitutionExists(user.institutionId))
-            result = await User.findByIdAndUpdate(
+          if (Institutions.InstitutionExists(user.institutionId)){
+            let userModify = await User.findByIdAndUpdate(
               id,
               {
                 name: { first: user.name.first, last: user.name.last },
@@ -236,6 +236,11 @@ async function Update(id, user) {
               },
               { useFindAndModify: false }
             );
+            let userAux =  Object.assign({},userModify.toObject());
+            delete userAux.secret;
+            userAux._jwt = "moduleToken.CreateToken(userAux);"
+            result = userAux;
+          }
           else throw `>>> Error: institution does not exist with id: ${id}`;
         else throw `>>> Error: user does not exist with id: ${id}`;
       else throw `>>> Error: id cannot be casted to ObjectId`;
