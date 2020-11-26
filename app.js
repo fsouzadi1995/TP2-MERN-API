@@ -11,7 +11,6 @@ const licenciasRouter = require('./routes/licencias');
 const asistenciasRouter = require('./routes/asistencias');
 const institucionesRouter = require('./routes/instituciones');
 const historicoQRRouter = require('./routes/historicoQR');
-const tokenRouter = require('./routes/token');
 const app = express();
 const cors = require('cors');
 
@@ -28,7 +27,6 @@ app.use('/api/licencias', licenciasRouter);
 app.use('/api/asistencias', asistenciasRouter);
 app.use('/api/instituciones', institucionesRouter);
 app.use('/api/historico', historicoQRRouter);
-app.use('/api/token', tokenRouter);
 
 global.clientConnection = initClientDbConnection();
 
