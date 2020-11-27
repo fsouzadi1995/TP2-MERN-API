@@ -5,6 +5,8 @@ const tokenUtil = require('./util/token-util');
 
 const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
+const jwt = require('express-jwt');
+const { token } = require('morgan');
 
 /**
  * Returns an array of HistoricalQRs
@@ -20,20 +22,19 @@ async function Get() {
  * Returns the latest HistoricalQR generated
  */
 async function GetLatest() {
+  const HistoricalQR = await getDB();
+  const result = null;
+
   try {
-    const HistoricalQR = await getDB();
-    const latestQR = await HistoricalQR.findOne().sort({ _id: -1 });
-    const token = await tokenUtil.CreateToken(latestQR);
+    const latest = await HistoricalQR.findOne().sort({ _id: -1 });
+    const jwt = await tokenUtil.CreateQRToken(latest._id);
 
-    const QR = {
-      _id: latestQR._id,
-      token: token.token,
-      created: latestQR.created,
-      expire: latestQR.expire,
-    };
+    result = tokenUtil.RemoveSensitive(latest, jwt);
 
-    return QR;
+    return encryptedQR;
   } catch (err) {}
+
+  return qr;
 }
 /**
  * Returns the latest HistoricalQR secret generated
@@ -41,6 +42,7 @@ async function GetLatest() {
 async function GetLatestSecret() {
   const HistoricalQR = await getDB();
   let result = null;
+
   try {
     result = await HistoricalQR.findOne().sort({ _id: -1 });
   } catch (err) {}
@@ -102,7 +104,7 @@ async function getDB() {
 module.exports = {
   Get,
   GetLatest,
+  GetLatestSecret,
   GetById,
   Create,
-  GetLatestSecret,
 };

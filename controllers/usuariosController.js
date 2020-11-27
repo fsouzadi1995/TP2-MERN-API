@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('../entities/usuario');
 const Util = require('./util/controller-util');
-const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
 const Institutions = require('../controllers/institucionesController');
 const tokenUtil = require('./util/token-util');
@@ -10,35 +9,25 @@ const tokenUtil = require('./util/token-util');
  * Returns an array of Users
  */
 async function Get() {
-  try {
-    const User = await getDB();
-    let users = await User.find({});
-    let result = [];
-    users.forEach((element) => {
-      let jwt = tokenUtil.CreateToken(element);
-      let user = {
-        _id: element._id,
-        name: { first: element.name.first, last: element.name.last },
-        adress: {
-          street: element.adress.street,
-          number: element.adress.number,
-          floor: element.adress.floor,
-          apartment: element.adress.apartment,
-        },
-        phone: element.phone,
-        email: element.email,
-        imagePatch: element.imagePatch,
-        isAdmin: element.isAdmin,
-        checkIn: element.checkIn,
-        checkOut: element.checkOut,
-        _jwt: jwt.token,
-        institutionId: element.institutionId,
-      };
-      result.push(user);
-    });
+  const User = await getDB();
+  let result = null;
 
-    return result;
-  } catch (err) {}
+  try {
+    let users = await User.find({});
+
+    if (users !== null && users.length > 0) {
+      result = [];
+
+      users.forEach((u) => {
+        let user = tokenUtil.RemoveSensitive(u.toObject());
+        result.push(user);
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+
+  return result;
 }
 
 /**
@@ -51,27 +40,11 @@ async function GetById(id) {
 
   try {
     if (Util.IsObjectId(id)) {
-      let userAux = await User.findById(id);
-      let jwt = tokenUtil.CreateToken(userAux);
-      result = {
-        _id: userAux._id,
-        name: { first: userAux.name.first, last: userAux.name.last },
-        adress: {
-          street: userAux.adress.street,
-          number: userAux.adress.number,
-          floor: userAux.adress.floor,
-          apartment: userAux.adress.apartment,
-        },
-        phone: userAux.phone,
-        email: userAux.email,
-        imagePatch: userAux.imagePatch,
-        isAdmin: userAux.isAdmin,
-        checkIn: userAux.checkIn,
-        checkOut: userAux.checkOut,
-        _jwt: jwt.token,
-        institutionId: userAux.institutionId,
-      };
-      return result;
+      let user = await User.findById(id);
+
+      if (user === null) throw `>>> User with id "${id}" not found`;
+
+      result = tokenUtil.RemoveSensitive(user.toObject());
     } else throw `>>> Error: id cannot be casted to ObjectId`;
   } catch (err) {
     console.log(err);
@@ -87,29 +60,12 @@ async function GetById(id) {
 async function GetByEmail(email) {
   const User = await getDB();
   let result = null;
+
   try {
-    let userAux = await User.findOne({ email: email });
-    if (userAux != undefined && userAux !== null) {
-      let jwt = tokenUtil.CreateToken(userAux);
-      result = {
-        _id: userAux._id,
-        name: { first: userAux.name.first, last: userAux.name.last },
-        adress: {
-          street: userAux.adress.street,
-          number: userAux.adress.number,
-          floor: userAux.adress.floor,
-          apartment: userAux.adress.apartment,
-        },
-        phone: userAux.phone,
-        email: userAux.email,
-        imagePatch: userAux.imagePatch,
-        isAdmin: userAux.isAdmin,
-        checkIn: userAux.checkIn,
-        checkOut: userAux.checkOut,
-        _jwt: jwt.token,
-        institutionId: userAux.institutionId,
-      };
-    } else throw `>>> User with email "${email}" not found`;
+    let user = await User.findOne({ email: email });
+
+    if (user !== null) result = tokenUtil.RemoveSensitive(user.toObject());
+    else throw `>>> User with email "${email}" not found`;
   } catch (err) {
     console.log(err);
   }
@@ -117,40 +73,45 @@ async function GetByEmail(email) {
   return result;
 }
 /**
- * Returns a Users that matches with a specific IDEntidad
+ * Returns a Users that matches a specific Institution
  * @param string {} institucionId
  */
 async function GetByInstitutionId(id) {
   const User = await getDB();
+  let result = null;
+
   try {
-    let users = await User.find({ institutionId: id });
-    let result = [];
-    if (users.length > 0) {
-      users.forEach((element) => {
-        let jwt = tokenUtil.CreateToken(element);
-        let user = {
-          _id: element._id,
-          name: { first: element.name.first, last: element.name.last },
-          adress: {
-            street: element.adress.street,
-            number: element.adress.number,
-            floor: element.adress.floor,
-            apartment: element.adress.apartment,
-          },
-          phone: element.phone,
-          email: element.email,
-          imagePatch: element.imagePatch,
-          isAdmin: element.isAdmin,
-          checkIn: element.checkIn,
-          checkOut: element.checkOut,
-          _jwt: jwt.token,
-          institutionId: element.institutionId,
-        };
-        result.push(user);
-      });
-      return result;
-    }
-    throw `>>> User with institution id "${institutionId}" not found`;
+    if (Institutions.InstitutionExists(id)) {
+      let users = await User.find({ institutionId: id });
+
+      if (users !== null && users.length > 0) {
+        result = [];
+
+        users.forEach((u) => {
+          let user = tokenUtil.RemoveSensitive(u);
+          result.push(user);
+        });
+      }
+    } else throw `>>> User with institution id "${id}" not found`;
+  } catch (err) {
+    console.log(err);
+  }
+
+  return result;
+}
+
+/**
+ * Returns a user secret based on the given id
+ * @param id string
+ */
+async function GetSecretById(id) {
+  const User = await getDB();
+  let result = null;
+
+  try {
+    if (Util.IsObjectId(id)) {
+      result = await User.findById(id).secret;
+    } else throw `>>> Error: id cannot be casted to ObjectId`;
   } catch (err) {
     console.log(err);
   }
@@ -170,7 +131,7 @@ async function Create(user) {
 
   try {
     if (!(await IsEmailOnUse(user.email))) {
-      if (Institutions.InstitutionExists(user.institutionId)) {
+      if (await Institutions.InstitutionExists(user.institutionId)) {
         const newUser = await new User({
           name: { first: user.name.first, last: user.name.last },
           adress: {
@@ -188,10 +149,10 @@ async function Create(user) {
           secret: btoa(btoa(date.valueOf) + Math.random() * 10000),
           institutionId: user.institutionId,
         }).save();
-        let userAux =  Object.assign({},newUser.toObject());
-        delete userAux.secret;
-        userAux._jwt = "moduleToken.CreateToken(userAux);"
-        result = userAux;
+
+        if (newUser === null) throw `>>> An error has ocurred`;
+
+        result = tokenUtil.RemoveSensitive(newUser.toObject());
       } else throw `>>> Error: institution does not exist with id: ${id}`;
     } else throw `>>> Error: user email "${user.email}" already claimed`;
   } catch (err) {
@@ -214,8 +175,8 @@ async function Update(id, user) {
     if (Util.IsEqual(id, user._id))
       if (Util.IsObjectId(id))
         if (await UserExists(id))
-          if (Institutions.InstitutionExists(user.institutionId)){
-            let userModify = await User.findByIdAndUpdate(
+          if (await Institutions.InstitutionExists(user.institutionId)) {
+            const newUser = await User.findByIdAndUpdate(
               id,
               {
                 name: { first: user.name.first, last: user.name.last },
@@ -235,12 +196,10 @@ async function Update(id, user) {
               },
               { useFindAndModify: false }
             );
-            let userAux =  Object.assign({},userModify.toObject());
-            delete userAux.secret;
-            userAux._jwt = "moduleToken.CreateToken(userAux);"
-            result = userAux;
-          }
-          else throw `>>> Error: institution does not exist with id: ${id}`;
+            if (newUser === null) throw `>>> An error has ocurred`;
+
+            result = await tokenUtil.RemoveSensitive(newUser.toObject());
+          } else throw `>>> Error: institution does not exist with id: ${id}`;
         else throw `>>> Error: user does not exist with id: ${id}`;
       else throw `>>> Error: id cannot be casted to ObjectId`;
     else throw `>>> Error: mismatching ids`;
@@ -301,6 +260,7 @@ module.exports = {
   GetById,
   GetByEmail,
   GetByInstitutionId,
+  GetSecretById,
   Create,
   Update,
   Delete,

@@ -1,4 +1,3 @@
-const jwt = require('express-jwt');
 const historical = require('../../controllers/historicoQRController');
 const { setIntervalAsync } = require('set-interval-async/dynamic');
 
@@ -18,27 +17,5 @@ async function Initialize() {
 async function Generate() {
   return await historical.Create();
 }
-
-// /**
-//  * Validation check for a given JWT
-//  * @param token
-//  */
-// async function Validate(jwt) {
-//   const qr = await historical.GetLatest();
-//   let isValid = false;
-
-//   jwt.verify(jwt, qr.secret, (err) => {
-//     if (err) console.log(err);
-//     else isValid = !isValid;
-//   });
-
-//   console.log(`is QR valid? ${isValid}`);
-
-//   if (isValid) {
-//     return
-//   }
-
-//   return isValid;
-// }
 
 module.exports = { Initialize, Generate };

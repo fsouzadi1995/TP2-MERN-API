@@ -21,8 +21,9 @@ async function GetById(id) {
   let result = null;
 
   try {
-    if (Util.IsObjectId(id)) result = await Institution.findById(id);
-    else throw `>>> Error: id cannot be casted to ObjectId`;
+    if (Util.IsObjectId(id)) {
+      result = await Institution.findById(id);
+    } else throw `>>> Error: id cannot be casted to ObjectId`;
   } catch (err) {
     console.log(err);
   }
