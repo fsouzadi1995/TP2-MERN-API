@@ -3,8 +3,9 @@ var router = express.Router();
 
 const userValidator = require('../middleware/user-validator');
 
-var attendances = require('../controllers/asistenciasController');
+const attendances = require('../controllers/asistenciasController');
 const tokenUtil = require('../controllers/util/token-util');
+const historical = require('../controllers/historicoQRController');
 
 router.get('/', async (req, res) => {
   res.send(await attendances.Get());
@@ -29,8 +30,10 @@ router.get('/usuario/:id/latest', async (req, res) => {
 });
 
 router.post('/', userValidator, async (req, res) => {
-  console.log(req);
-  const isValid = await tokenUtil.VerifyQRToken(req.headers['jwt']);
+  const isValid = await tokenUtil.VerifyQRToken(
+    req.headers['jwt'],
+    await historical.GetLatestSecret()
+  );
 
   if (isValid) {
     const result = await attendances.Create(req.body);
@@ -45,7 +48,10 @@ router.post('/', userValidator, async (req, res) => {
 });
 
 router.put('/:id', userValidator, async (req, res) => {
-  const isValid = await tokenUtil.VerifyQRToken(req.headers['jwt']);
+  const isValid = await tokenUtil.VerifyQRToken(
+    req.headers['jwt'],
+    await historical.GetLatestSecret()
+  );
 
   if (isValid) {
     const result = await attendances.Update(req.params.id, req.body);

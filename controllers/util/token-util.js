@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const User = require('../../entities/usuario');
-// const users = require('../usuariosController');
+// const User = require('../../entities/usuario');
 // const historical = require('../historicoQRController');
+// const users = require('../usuariosController');
 
 function GenerateToken(id, secret) {
   let result = null;
@@ -14,24 +14,24 @@ function GenerateToken(id, secret) {
   return result;
 }
 
-async function VerifyQRToken(token) {
-  const secret = await historical.GetLatestSecret();
+async function VerifyQRToken(token, secret) {
   let isValid = false;
 
-  jwt.verify(token, secret, function (error) {
-    if (!error) isValid = true;
+  console.log('qr token:', token);
+  console.log('secret:', secret);
+
+  jwt.verify(token, secret, function (err) {
+    if (!err) isValid = true;
   });
 
   return isValid;
 }
 
-async function RemoveSensitive(data) {
+function RemoveSensitive(data) {
   let newObj = Object.assign({}, data);
 
   delete newObj.secret;
   newObj._jwt = GenerateToken(newObj._id, data.secret);
-
-  console.log(newObj);
 
   return newObj;
 }

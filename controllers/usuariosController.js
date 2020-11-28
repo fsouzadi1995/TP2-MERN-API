@@ -10,19 +10,17 @@ const tokenUtil = require('./util/token-util');
  */
 async function Get() {
   const User = await getDB();
-  let result = null;
+  let result = [];
 
   try {
     let users = await User.find({});
 
-    if (users !== null && users.length > 0) {
-      result = [];
+    users.forEach((u) => {
+      let user = tokenUtil.RemoveSensitive(u.toObject());
+      result.push(user);
+    });
 
-      users.forEach((u) => {
-        let user = tokenUtil.RemoveSensitive(u.toObject());
-        result.push(user);
-      });
-    }
+    console.log(result);
   } catch (err) {
     console.log(err);
   }
@@ -110,7 +108,9 @@ async function GetSecretById(id) {
 
   try {
     if (Util.IsObjectId(id)) {
-      result = await User.findById(id).secret;
+      const user = await User.findById(id);
+
+      result = user.secret;
     } else throw `>>> Error: id cannot be casted to ObjectId`;
   } catch (err) {
     console.log(err);

@@ -2,11 +2,7 @@ const mongoose = require('mongoose');
 const HistoricalQR = require('../entities/historicoQR');
 const Util = require('./util/controller-util');
 const tokenUtil = require('./util/token-util');
-
-const loader = require('../infrastructure/config-loader');
 const btoa = require('btoa');
-const jwt = require('express-jwt');
-const { token } = require('morgan');
 
 /**
  * Returns an array of HistoricalQRs
