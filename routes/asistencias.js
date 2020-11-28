@@ -37,14 +37,9 @@ router.post('/', userValidator, async (req, res) => {
 
   if (isValid) {
     const result = await attendances.Create(req.body);
-    if (result !== null) {
-      res.status(201).json(result);
-    } else {
-      res.sendStatus(403);
-    }
-  } else {
-    res.sendStatus(401);
-  }
+    if (result !== null) res.status(201).json(result);
+    else res.sendStatus(403);
+  } else res.sendStatus(401);
 });
 
 router.put('/:id', userValidator, async (req, res) => {
@@ -55,14 +50,9 @@ router.put('/:id', userValidator, async (req, res) => {
 
   if (isValid) {
     const result = await attendances.Update(req.params.id, req.body);
-    if (result !== null) {
-      res.status(200).json(result);
-    } else {
-      res.sendStatus(403);
-    }
-  } else {
-    res.sendStatus(401);
-  }
+    if (result !== null) res.status(200).json(result);
+    else res.sendStatus(403);
+  } else res.sendStatus(401);
 });
 
 router.delete('/:id', async (req, res) => {
