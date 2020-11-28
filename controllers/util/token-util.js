@@ -2,20 +2,9 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../../entities/usuario');
 // const users = require('../usuariosController');
-const historical = require('../historicoQRController');
+// const historical = require('../historicoQRController');
 
-async function GenerateQRToken(id) {
-  const secret = await historical.GetLatestSecret();
-  let result = null;
-  try {
-    result = jwt.sign(id.toJSON(), secret);
-  } catch (error) {
-    console.log(error);
-  }
-  return result;
-}
-
-function GenerateUserToken(id, secret) {
+function GenerateToken(id, secret) {
   let result = null;
   try {
     result = jwt.sign(id.toJSON(), secret);
@@ -36,11 +25,11 @@ async function VerifyQRToken(token) {
   return isValid;
 }
 
-function RemoveSensitive(data) {
+async function RemoveSensitive(data) {
   let newObj = Object.assign({}, data);
 
   delete newObj.secret;
-  newObj._jwt = GenerateUserToken(newObj._id, data.secret);
+  newObj._jwt = GenerateToken(newObj._id, data.secret);
 
   console.log(newObj);
 
@@ -48,8 +37,6 @@ function RemoveSensitive(data) {
 }
 
 module.exports = {
-  GenerateQRToken,
-  GenerateUserToken,
   VerifyQRToken,
   RemoveSensitive,
 };

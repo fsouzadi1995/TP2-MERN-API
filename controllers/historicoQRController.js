@@ -23,18 +23,14 @@ async function Get() {
  */
 async function GetLatest() {
   const HistoricalQR = await getDB();
-  const result = null;
+  let result = null;
 
   try {
     const latest = await HistoricalQR.findOne().sort({ _id: -1 });
-    const jwt = await tokenUtil.CreateQRToken(latest._id);
-
-    result = tokenUtil.RemoveSensitive(latest, jwt);
-
-    return encryptedQR;
+    result = await tokenUtil.RemoveSensitive(latest.toObject());
   } catch (err) {}
 
-  return qr;
+  return result;
 }
 /**
  * Returns the latest HistoricalQR secret generated
