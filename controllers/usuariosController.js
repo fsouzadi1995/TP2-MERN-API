@@ -86,7 +86,7 @@ async function GetByInstitutionId(id) {
         result = [];
 
         users.forEach((u) => {
-          let user = tokenUtil.RemoveSensitive(u);
+          let user = tokenUtil.RemoveSensitive(u.toObject());
           result.push(user);
         });
       }
